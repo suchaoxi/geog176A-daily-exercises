@@ -11,6 +11,8 @@ url = "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-countie
 
 covid = read_csv(url)
 
+region = data.frame(state = state.name, region = state.region)
+
 covid %>%
   right_join(region, by = "state") %>%
   group_by(region, date) %>%
