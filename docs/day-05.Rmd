@@ -1,6 +1,6 @@
 ---
 title: "Daily Exercise 05"
-author: "Mike Johnson"
+author: "Chelsey Su"
 output: html_document
 ---
 
@@ -51,8 +51,19 @@ Use `dplyr` verbs to tell create a data.frame of the **5** counties with the mos
 
 (**Hint:** `filter`, `arrange`)
 
-```{r}
+```{r, message = FALSE, warning = FALSE}
+library(tidyverse)
 
+url = 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
+
+covid = read_csv(url)
+
+covid %>%
+  filter(date == max(date)) %>% 
+  select(date, cases, county) %>% 
+  arrange(cases, county) %>% 
+  arrange(-cases) %>% 
+  slice_head(df, n = 5)
 ```
 
 ## Question 2: 
@@ -62,7 +73,19 @@ Use `dplyr` verbs to tell create a data.frame of the **5** states with the _most
 (**Hint:** `filter`, `group_by`, `summarize`, `arrange`)
 
 ```{r}
+library(tidyverse)
 
+url = 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
+
+covid = read_csv(url)
+
+covid %>%
+  filter(date == max(date)) %>% 
+  group_by(state) %>% 
+  select(date, cases, state) %>%
+  summarize(cases_total = sum(cases)) %>% 
+  arrange(-cases_total) %>% 
+  slice_head(df, n = 5)
 ```
 
 ## Question 3: 
@@ -72,7 +95,18 @@ Use the `dplyr` verbs to report the  **5** counties with the _worst_ current dea
 (**Hint:** `filter`, `mutate`, `arrange`, `slice`)
 
 ```{r}
+library(tidyverse)
 
+url = 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
+
+covid = read_csv(url)
+
+covid %>%
+  filter(date == max(date)) %>% 
+  select(date, county, cases, deaths) %>% 
+  mutate(ratio = 100* (deaths/cases)) %>% 
+  arrange(-ratio) %>% 
+  slice_head(df, n = 5)
 ```
 
 
@@ -83,7 +117,20 @@ USe the `dplyr` verbs to report the **5** states with the worst current deaths/c
 (**Hint:** `filter`, `group_by`, `summarize`, `mutate`, `arrange`)
 
 ```{r}
+library(tidyverse)
 
+url = 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
+
+covid = read_csv(url)
+
+covid %>%
+  filter(date == max(date)) %>% 
+  select(date, state, cases, deaths) %>%
+  group_by(state) %>% 
+  summarize(cases_total = sum(cases), deaths_total = sum(deaths)) %>% 
+  mutate(ratio = 100* (deaths_total/cases_total)) %>% 
+  arrange(-ratio) %>% 
+  slice_head(df, n = 5)
 ```
 
 
