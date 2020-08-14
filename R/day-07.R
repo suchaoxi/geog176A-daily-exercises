@@ -11,13 +11,6 @@ url = "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-countie
 
 covid = read_csv(url)
 
-left_join(covid, region, by = "state") %>%
-  count(region) %>%
-  mutate(tot = sum(n))
-right_join(covid, region, by = "state") %>%
-  count(region) %>%
-  mutate(tot = sum(n))
-
 covid %>%
   right_join(region, by = "state") %>%
   group_by(region, date) %>%
