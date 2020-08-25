@@ -1,0 +1,46 @@
+---
+title: "Geography 176A"
+author: "Chelsey Su"
+subtitle: "Daily Exercise 13"
+output:
+    html_document:
+      theme: journal
+---
+```{r, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(sf)
+library(USAboundaries)
+library(rmapshaper)
+library(ggplot2)
+library(ggthemes)
+```
+
+```{r}
+conus = us_states() %>% 
+  filter(!name %in% c("Alaska", "Hawaii", "Puerto Rico")) %>% 
+  st_union() %>% 
+  st_transform(5070)
+
+ggplot() +
+  geom_sf(data = conus) 
+```
+
+```{r}
+st_conus = st_simplify(conus, dTolerance = 50000) 
+
+mapview::npts(st_conus)
+
+ggplot() +
+  geom_sf(data = st_conus)
+
+```
+
+```{r}
+ms_conus = ms_simplify(conus, keep = 0.01)
+
+mapview::npts(ms_conus)
+
+ggplot() +
+  geom_sf(data = ms_conus)
+```
+
