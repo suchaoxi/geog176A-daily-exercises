@@ -1,0 +1,53 @@
+---
+title: "Geography 176A"
+author: "Chelsey Su"
+subtitle: "Daily Exercise 19"
+output:
+    html_document:
+      theme: journal
+---
+
+```{r, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(sf)
+library(USAboundaries)
+library(osmdata)
+library(rmapshaper)
+library(raster)
+library(leaflet)
+library(climateR)
+```
+
+```{r, message = FALSE, warning = FALSE}
+param_meta$terraclim
+```
+
+```{r, message = FALSE, warning = FALSE}
+params = c("aet", "prcp", "tmax", "tmin")
+
+AOI = us_states() %>% 
+  filter(name == "California")
+
+CA = getTerraClim(AOI, params, startDate = "2017-06-01") %>% 
+  stack() %>% 
+  setNames(params)
+
+values = values(CA)
+
+idx = which(!is.na(values))
+
+v = na.omit(values)
+
+vs = scale(v)
+
+e = kmeans(vs, 10, iter.max = 100)
+
+kmeans_CA = CA$tmax
+
+values(kmeans_CA) = NA
+
+kmeans_CA[idx] = e$cluster
+
+plot(kmeans_CA, col = RColorBrewer::brewer.pal(10, "Spectral"))
+```
+
