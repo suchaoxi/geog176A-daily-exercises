@@ -1,0 +1,59 @@
+---
+title: "Geography 176A"
+author: "Chelsey Su"
+subtitle: "Daily Exercise 16"
+output:
+    html_document:
+      theme: journal
+---
+
+```{r, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(sf)
+library(USAboundaries)
+library(rmapshaper)
+library(leaflet)
+library(readxl)
+library(knitr)
+```
+
+```{r, message = FALSE, warning = FALSE}
+MS = read_sf("~/github/geog-176A-labs/data/majorrivers_0_0") %>% 
+  filter(SYSTEM == "Mississippi")
+```
+
+```{r,message = FALSE, warning = FALSE}
+NID2019_U = read_excel("~/github/geog-176A-labs/data/NID2019_U.xlsx") %>% 
+  filter(!is.na(LATITUDE)) %>% 
+  filter(!is.na(LONGITUDE))
+```
+
+```{r, message = FALSE, warning = FALSE}
+dam = NID2019_U %>% 
+  filter(!STATE %in% c("AK", "HI", "GU", "PR")) %>% 
+  filter(HAZARD == "H") %>% 
+  filter(PURPOSES == "C") %>% 
+  group_by(STATE) %>% 
+  slice_max(NID_STORAGE, n = 1)
+```
+
+```{r, message = FALSE, warning = FALSE}
+max_storage = dam %>% 
+  select(DAM_NAME, PURPOSES, NID_STORAGE, YEAR_COMPLETED)
+```
+
+```{r, message = FALSE, warning = FALSE}
+radius = dam %>% 
+  mutate(radius = NID_STORAGE / 1500000) %>% 
+  select(radius)
+```
+
+```{r, message = FALSE, warning = FALSE}
+leaflet() %>% 
+  addProviderTiles(providers$CartoDB) %>% 
+  addCircleMarkers(data = dam, color = "purple", fillOpacity = 1, radius = as.vector(radius$radius), stroke = FALSE, popup = leafpop::popupTable(max_storage, feature.id = FALSE)) %>% 
+  addPolylines(data = MS, color = "yellow")
+```
+
+
+
