@@ -1,0 +1,41 @@
+---
+title: "Geography 176A"
+author: "Chelsey Su"
+subtitle: "Daily Exercise 17"
+output:
+    html_document:
+      theme: journal
+---
+
+```{r, message = FALSE}
+library(tidyverse)
+library(sf)
+library(elevatr)
+library(raster)
+library(readr)
+library(rgdal)
+```
+
+```{r}
+goleta = read_csv("~/github/geog176A-daily-exercises/data/uscities.csv") %>%  
+  st_as_sf(coords = c("lng", "lat"), crs = 4326) %>%
+  st_transform(5070) %>%
+  filter(city == "Goleta") %>%
+  st_buffer(5000) %>% 
+  st_bbox(z = 20) %>% 
+  st_as_sfc() %>% 
+  st_as_sf()
+
+elev = elevatr::get_elev_raster(goleta, z = 10) %>% 
+  crop(goleta)
+
+writeRaster(elev, filename = "~/github/geog176A-daily-exercises/data/goleta-elev.tif", overwrite = TRUE)
+
+elev_goleta_plot = plot(elev, main="Elevation of Goleta")
+
+(elev = raster("~/github/geog176A-daily-exercises/data/goleta-elev.tif"))
+```
+
+
+
+
