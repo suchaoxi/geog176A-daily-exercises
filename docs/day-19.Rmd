@@ -1,0 +1,73 @@
+---
+title: "Geography 176A"
+author: "Chelsey Su"
+subtitle: "Daily Exercise 19"
+output:
+    html_document:
+      theme: journal
+---
+```{r, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(sf)
+library(elevatr)
+library(raster)
+library(readr)
+library(rgdal)
+library(osmdata)
+library(dplyr)
+library(leaflet)
+library(leafpop)
+```
+
+```{r}
+goleta = read_csv("~/github/geog176A-daily-exercises/data/uscities.csv") %>%  
+  st_as_sf(coords = c("lng", "lat"), crs = 4326) %>%
+  st_transform(5070) %>%
+  filter(city == "Goleta") %>%
+  st_buffer(5000) %>% 
+  st_bbox(z = 20) %>% 
+  st_as_sfc() %>% 
+  st_as_sf()
+
+elev = elevatr::get_elev_raster(goleta, z = 10) %>% 
+  crop(goleta)
+
+writeRaster(elev, filename = "~/github/geog176A-daily-exercises/data/goleta-elev.tif", overwrite = TRUE)
+
+elevation = raster("~/github/geog176A-daily-exercises/data/goleta-elev.tif")
+
+threshold = function(x){ifelse(x <= 0, NA, 1)}
+
+m = calc(elevation, threshold)
+
+ocean_cut = elevation * m
+
+rcl = data.frame(min = seq(0, 500, 100), max = seq(100, 600, 100), lab = c(0:5))
+
+rc = reclassify(ocean_cut, rcl, lowerTRUE = TRUE)
+
+s = stack(elevation, m, ocean_cut, rc) %>% 
+  setNames(c("Elevation", "Land-mask", "Terrain", "Topography"))
+
+bb = st_bbox(s) %>% 
+  st_as_sfc() %>% 
+  st_transform(4326)
+
+osm = opq(bb) %>% 
+  add_osm_feature(key = "amenity", value = "restaurant") %>% 
+  osmdata_sf()
+
+restaurant = osm$osm_points %>% 
+  filter(name != "NA")
+
+R = restaurant %>%
+  mutate(elev_r = raster::extract(elevation, restaurant)) 
+
+leaflet() %>% 
+  addProviderTiles(providers$CartoDB) %>% 
+  addMarkers(data = R, label = ~name, popup = ~as.character(elevation))
+```
+
+
+```
+
